@@ -42,29 +42,29 @@ AlarmClass::AlarmClass()
 void AlarmClass::updateNextTrigger()
 {
   if (Mode.isEnabled) {
-    time_t time = now();
-    if (dtIsAlarm(Mode.alarmType) && nextTrigger <= time) {
+    time_t timenow = time(nullptr);
+    if (dtIsAlarm(Mode.alarmType) && nextTrigger <= timenow) {
       // update alarm if next trigger is not yet in the future
       if (Mode.alarmType == dtExplicitAlarm) {
         // is the value a specific date and time in the future
         nextTrigger = value;  // yes, trigger on this value
       } else if (Mode.alarmType == dtDailyAlarm) {
         //if this is a daily alarm
-        if (value + previousMidnight(now()) <= time) {
+        if (value + previousMidnight(time(nullptr)) <= timenow) {
           // if time has passed then set for tomorrow
-          nextTrigger = value + nextMidnight(time);
+          nextTrigger = value + nextMidnight(timenow);
         } else {
           // set the date to today and add the time given in value
-          nextTrigger = value + previousMidnight(time);
+          nextTrigger = value + previousMidnight(timenow);
         }
       } else if (Mode.alarmType == dtWeeklyAlarm) {
         // if this is a weekly alarm
-        if ((value + previousSunday(now())) <= time) {
+        if ((value + previousSunday(time(nullptr))) <= timenow) {
           // if day has passed then set for the next week.
-          nextTrigger = value + nextSunday(time);
+          nextTrigger = value + nextSunday(timenow);
         } else {
           // set the date to this week today and add the time given in value
-          nextTrigger = value + previousSunday(time);
+          nextTrigger = value + previousSunday(timenow);
         }
       } else {
         // its not a recognized alarm type - this should not happen
@@ -73,7 +73,7 @@ void AlarmClass::updateNextTrigger()
     }
     if (Mode.alarmType == dtTimer) {
       // its a timer
-      nextTrigger = time + value;  // add the value to previous time (this ensures delay always at least Value seconds)
+      nextTrigger = timenow + value;  // add the value to previous time (this ensures delay always at least Value seconds)
     }
   }
 }
@@ -213,11 +213,11 @@ void TimeAlarmsClass::waitForRollover( dtUnits_t Units)
 
 uint8_t TimeAlarmsClass::getDigitsNow( dtUnits_t Units) const
 {
-  time_t time = now();
-  if (Units == dtSecond) return numberOfSeconds(time);
-  if (Units == dtMinute) return numberOfMinutes(time);
-  if (Units == dtHour) return numberOfHours(time);
-  if (Units == dtDay) return dayOfWeek(time);
+  time_t timenow = time(nullptr);
+  if (Units == dtSecond) return numberOfSeconds(timenow);
+  if (Units == dtMinute) return numberOfMinutes(timenow);
+  if (Units == dtHour) return numberOfHours(timenow);
+  if (Units == dtDay) return dayOfWeek(timenow);
   return 255;  // This should never happen
 }
 
@@ -235,7 +235,7 @@ void TimeAlarmsClass::serviceAlarms()
   if (!isServicing) {
     isServicing = true;
     for (servicedAlarmId = 0; servicedAlarmId < dtNBR_ALARMS; servicedAlarmId++) {
-      if (Alarm[servicedAlarmId].Mode.isEnabled && (now() >= Alarm[servicedAlarmId].nextTrigger)) {
+      if (Alarm[servicedAlarmId].Mode.isEnabled && (time(nullptr) >= Alarm[servicedAlarmId].nextTrigger)) {
         OnTick_t TickHandler = Alarm[servicedAlarmId].onTickHandler;
         if (Alarm[servicedAlarmId].Mode.isOneShot) {
           free(servicedAlarmId);  // free the ID if mode is OnShot
@@ -281,7 +281,7 @@ time_t TimeAlarmsClass::getNextTrigger(AlarmID_t ID) const
 // attempt to create an alarm and return true if successful
 AlarmID_t TimeAlarmsClass::create(time_t value, OnTick_t onTickHandler, uint8_t isOneShot, dtAlarmPeriod_t alarmType)
 {
-  if ( ! ( (dtIsAlarm(alarmType) && now() < SECS_PER_YEAR) || (dtUseAbsoluteValue(alarmType) && (value == 0)) ) ) {
+  if ( ! ( (dtIsAlarm(alarmType) && time(nullptr) < SECS_PER_YEAR) || (dtUseAbsoluteValue(alarmType) && (value == 0)) ) ) {
     // only create alarm ids if the time is at least Jan 1 1971
     for (uint8_t id = 0; id < dtNBR_ALARMS; id++) {
       if (Alarm[id].Mode.alarmType == dtNotAllocated) {

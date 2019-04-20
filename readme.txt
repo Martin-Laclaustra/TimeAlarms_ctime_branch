@@ -1,7 +1,7 @@
-Alarms
+Alarms (ctime branch)
 
-The Alarm library is a companion to the Time library that makes it easy to 
-perform tasks at specific times or after specific intervals.
+The Alarm library makes it easy to perform tasks at specific times or after specific intervals.
+It depends on ctime library, provided in the toolchains. Unlike the stem of this branch, it does not depend on the Time library.
 
 Tasks scheduled at a particular time of day are called Alarms,
 tasks scheduled after an interval of time has elapsed are called Timers.

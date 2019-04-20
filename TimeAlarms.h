@@ -4,7 +4,7 @@
 #define TimeAlarms_h
 
 #include <Arduino.h>
-#include "TimeLib.h"
+#include <time.h> 
 
 #if !defined(dtNBR_ALARMS )
 #if defined(__AVR__)
@@ -17,6 +17,35 @@
 #endif
 
 #define USE_SPECIALIST_METHODS  // define this for testing
+
+/* Useful Constants */
+#define SECS_PER_MIN  ((time_t)(60UL))
+#define SECS_PER_HOUR ((time_t)(3600UL))
+#define SECS_PER_DAY  ((time_t)(SECS_PER_HOUR * 24UL))
+#define DAYS_PER_WEEK ((time_t)(7UL))
+#define SECS_PER_WEEK ((time_t)(SECS_PER_DAY * DAYS_PER_WEEK))
+#define SECS_PER_YEAR ((time_t)(SECS_PER_DAY * 365UL)) // TODO: ought to handle leap years
+/* Useful Macros for getting elapsed time */
+#define numberOfSeconds(_time_) ((_time_) % SECS_PER_MIN)  
+#define numberOfMinutes(_time_) (((_time_) / SECS_PER_MIN) % SECS_PER_MIN) 
+#define numberOfHours(_time_) (((_time_) % SECS_PER_DAY) / SECS_PER_HOUR)
+#define dayOfWeek(_time_) ((((_time_) / SECS_PER_DAY + 4)  % DAYS_PER_WEEK)+1) // 1 = Sunday
+#define elapsedSecsToday(_time_) ((_time_) % SECS_PER_DAY)   // the number of seconds since last midnight 
+#define previousMidnight(_time_) (((_time_) / SECS_PER_DAY) * SECS_PER_DAY)  // time at the start of the given day
+#define nextMidnight(_time_) (previousMidnight(_time_)  + SECS_PER_DAY)   // time at the end of the given day 
+#define elapsedSecsThisWeek(_time_) (elapsedSecsToday(_time_) +  ((dayOfWeek(_time_)-1) * SECS_PER_DAY))   // note that week starts on day 1
+#define previousSunday(_time_) ((_time_) - elapsedSecsThisWeek(_time_))      // time at the start of the week for the given time
+#define nextSunday(_time_) (previousSunday(_time_)+SECS_PER_WEEK)          // time at the end of the week for the given time
+
+typedef enum {
+  dowSunday = 0,
+  dowMonday,
+  dowTuesday,
+  dowWednesday,
+  dowThursday,
+  dowFriday,
+  dowSaturday,
+} timeDayOfWeek_t;
 
 typedef enum {
   dtMillisecond,
@@ -101,7 +130,7 @@ public:
 
   // trigger once on a given day and time
   AlarmID_t alarmOnce(const timeDayOfWeek_t DOW, const int H, const int M, const int S, OnTick_t onTickHandler) {
-    time_t value = (DOW-1) * SECS_PER_DAY + AlarmHMS(H,M,S);
+    time_t value = (DOW) * SECS_PER_DAY + AlarmHMS(H,M,S);
     if (value <= 0) return dtINVALID_ALARM_ID;
     return create(value, onTickHandler, true, dtWeeklyAlarm);
   }
@@ -117,7 +146,7 @@ public:
 
   // trigger weekly at a specific day and time
   AlarmID_t alarmRepeat(const timeDayOfWeek_t DOW, const int H, const int M, const int S, OnTick_t onTickHandler) {
-    time_t value = (DOW-1) * SECS_PER_DAY + AlarmHMS(H,M,S);
+    time_t value = (DOW) * SECS_PER_DAY + AlarmHMS(H,M,S);
     if (value <= 0) return dtINVALID_ALARM_ID;
     return create(value, onTickHandler, false, dtWeeklyAlarm);
   }

@@ -1,9 +1,9 @@
 {
-"name": "TimeAlarms",
+"name": "TimeAlarms_ctime_branch",
 "frameworks": "Arduino",
 "keywords": "Time, alarm, schedule, date, hour, minute, second, day, week, month, year",
 "description": "Schedule alarms to occur at specific times",
-"url": "http://playground.arduino.cc/Code/Time",
+"url": "https://github.com/Martin-Laclaustra/TimeAlarms_ctime_branch",
 "authors":
 {
         "name": "Michael Margolis"
@@ -11,6 +11,6 @@
 "repository":
 {
     "type": "git",
-    "url": "https://github.com/PaulStoffregen/TimeAlarms"
+    "url": "https://github.com/Martin-Laclaustra/TimeAlarms_ctime_branch"
 }
 }

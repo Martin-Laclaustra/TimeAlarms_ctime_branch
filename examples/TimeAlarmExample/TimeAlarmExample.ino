@@ -14,7 +14,8 @@
 // Questions?  Ask them here:
 // http://forum.arduino.cc/index.php?topic=66054.0
 
-#include <TimeLib.h>
+#include <time.h>                       // time() ctime()
+#include <sys/time.h>                   // struct timeval
 #include <TimeAlarms.h>
 
 AlarmId id;
@@ -23,7 +24,16 @@ void setup() {
   Serial.begin(9600);
   while (!Serial) ; // wait for Arduino Serial Monitor
 
-  setTime(8,29,0,1,1,11); // set time to Saturday 8:29:00am Jan 1 2011
+  struct tm tm_newtime; // set time to Saturday 8:29:00am Jan 1 2011
+  tm_newtime.tm_year = 2011 - 1900;
+  tm_newtime.tm_mon = 1 - 1;
+  tm_newtime.tm_mday = 1;
+  tm_newtime.tm_hour = 8;
+  tm_newtime.tm_min = 29;
+  tm_newtime.tm_sec = 0;
+  timeval tv = { mktime(&tm_newtime), 0 };
+  timezone tz = { 0, 0};
+  settimeofday(&tv, &tz);
 
   // create the alarms, to trigger at specific times
   Alarm.alarmRepeat(8,30,0, MorningAlarm);  // 8:30am every day
@@ -37,7 +47,8 @@ void setup() {
 }
 
 void loop() {
-  digitalClockDisplay();
+  time_t tnow = time(nullptr);
+  printf("gmtime asctime: %s", asctime(gmtime(&tnow)));
   Alarm.delay(1000); // wait one second between clock display
 }
 
@@ -75,19 +86,3 @@ void OnceOnly() {
   // you can also use Alarm.disable() to turn the timer off, but keep
   // it in memory, to turn back on later with Alarm.enable().
 }
-
-void digitalClockDisplay() {
-  // digital clock display of the time
-  Serial.print(hour());
-  printDigits(minute());
-  printDigits(second());
-  Serial.println();
-}
-
-void printDigits(int digits) {
-  Serial.print(":");
-  if (digits < 10)
-    Serial.print('0');
-  Serial.print(digits);
-}
-
